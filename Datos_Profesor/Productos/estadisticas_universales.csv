@@ -1,0 +1,4 @@
+Archivo,N_pixeles_validos,Media_mm_a,Mediana_mm_a,Std_mm_a,Min_mm_a,Max_mm_a,P5_mm_a,P95_mm_a,Pct_Subsidencia_Critica,Pct_Subsidencia_Moderada,Pct_Subsidencia_Leve,Pct_Estable,Pct_Elevacion_Leve,Pct_Elevacion_Moderada,Pct_Elevacion_Critica,Pct_Total_Subsidencia
+vertical_castillo,179477,-3.225,-3.24,6.266,-23.059,14.692,-13.902,7.713,12.4,24.09,23.26,22.45,8.25,6.96,2.6,59.75
+vertical_cerro,179472,-2.832,-2.849,6.264,-22.651,15.077,-13.504,8.105,11.33,22.47,22.88,24.02,8.93,7.42,2.94,56.68
+vertical_paper,179477,-3.225,-3.24,6.266,-23.059,14.692,-13.902,7.713,12.4,24.09,23.26,22.45,8.25,6.96,2.6,59.75

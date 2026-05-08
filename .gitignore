@@ -1,0 +1,14 @@
+# Ignorar archivos temporales y basura del sistema
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+
+# Ignorar archivos comprimidos grandes
+*.zip
+*.tar.gz
+*.rar
+
+# Opcional: Ignorar TIFs muy pesados o de procesamiento intermedio (se comentan para subir el entregable completo, pero se pueden descomentar si hay problemas de peso futuro)
+# *.tif
+# *.xml

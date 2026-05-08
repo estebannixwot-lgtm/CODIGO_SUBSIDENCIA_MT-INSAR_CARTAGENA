@@ -1,0 +1,56 @@
+=================================================================
+ REPORTE DE CARTOGRAFIA UNIVERSAL InSAR
+ Generado: 2026-05-08 11:42:54
+=================================================================
+
+Escenario: vertical_castillo
+  Pixeles validos    : 179,477
+  Media              : -3.225 mm/a
+  Mediana            : -3.240 mm/a
+  Desv. Estandar     : 6.266 mm/a
+  Percentil 5        : -13.902 mm/a
+  Percentil 95       : 7.713 mm/a
+  --- Distribucion por categoria ---
+  Subsidencia Critica  : 12.40%
+  Subsidencia Moderada : 24.09%
+  Subsidencia Leve     : 23.26%
+  Estable              : 22.45%
+  Elevacion Leve       : 8.25%
+  Elevacion Moderada   : 6.96%
+  Elevacion Critica    : 2.60%
+  TOTAL SUBSIDENCIA    : 59.75%
+
+Escenario: vertical_cerro
+  Pixeles validos    : 179,472
+  Media              : -2.832 mm/a
+  Mediana            : -2.849 mm/a
+  Desv. Estandar     : 6.264 mm/a
+  Percentil 5        : -13.504 mm/a
+  Percentil 95       : 8.105 mm/a
+  --- Distribucion por categoria ---
+  Subsidencia Critica  : 11.33%
+  Subsidencia Moderada : 22.47%
+  Subsidencia Leve     : 22.88%
+  Estable              : 24.02%
+  Elevacion Leve       : 8.93%
+  Elevacion Moderada   : 7.42%
+  Elevacion Critica    : 2.94%
+  TOTAL SUBSIDENCIA    : 56.68%
+
+Escenario: vertical_paper
+  Pixeles validos    : 179,477
+  Media              : -3.225 mm/a
+  Mediana            : -3.240 mm/a
+  Desv. Estandar     : 6.266 mm/a
+  Percentil 5        : -13.902 mm/a
+  Percentil 95       : 7.713 mm/a
+  --- Distribucion por categoria ---
+  Subsidencia Critica  : 12.40%
+  Subsidencia Moderada : 24.09%
+  Subsidencia Leve     : 23.26%
+  Estable              : 22.45%
+  Elevacion Leve       : 8.25%
+  Elevacion Moderada   : 6.96%
+  Elevacion Critica    : 2.60%
+  TOTAL SUBSIDENCIA    : 59.75%
+

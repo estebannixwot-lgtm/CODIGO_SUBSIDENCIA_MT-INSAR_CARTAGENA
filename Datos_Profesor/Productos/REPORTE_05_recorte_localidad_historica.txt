@@ -1,0 +1,22 @@
+
+======================================================
+ EFEMÉRIDES DE EJECUCIÓN - 2026-05-08 11:42:58
+======================================================
+=================================================================
+  SCRIPT 05 - ANALISIS RECORTADO A LOCALIDAD HISTORICA
+=================================================================
+Shapefile cargado: 1 poligonos
+GNSS media de referencia: -1.904 mm/a
+
+  Procesando escenario: CASTILLO
+    Pixeles historicos: 64,933
+    Filtrados (IQR)   : 62,298  Media=-3.357 mm/a
+  Procesando escenario: CERRO
+    Pixeles historicos: 64,930
+    Filtrados (IQR)   : 62,293  Media=-2.964 mm/a
+  Procesando escenario: PAPER
+    Pixeles historicos: 64,933
+    Filtrados (IQR)   : 62,298  Media=-3.357 mm/a
+=================================================================
+  SCRIPT 05 COMPLETADO
+=================================================================

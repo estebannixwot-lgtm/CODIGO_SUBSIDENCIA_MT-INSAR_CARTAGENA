@@ -1,0 +1,33 @@
+
+======================================================
+ EFEMÉRIDES DE EJECUCIÓN - 2026-05-08 11:42:11
+======================================================
+=================================================================
+  SCRIPT 01 - CONVERSION LOS -> VERTICAL + FILTRO IQR
+=================================================================
+LIA valido: media=40.78 deg  N=1,566,046
+Factor IQR: 1.5
+-----------------------------------------------------------------
+
+  Escenario: CASTILLO
+    Bruto   : N=215,844  media=-23.60  std=89.55 mm/a
+    Rango IQR [-23.06, 14.69]  Outliers=36,367 (16.8%)
+    Filtrado: N=179,477  media=-3.225  std=6.266 mm/a
+    Raster: C:\Users\Esteban Pinto\Desktop\Tesis\07_Entregable_Universidad\Datos_Profesor\Productos\vertical_castillo.tif
+
+  Escenario: CERRO
+    Bruto   : N=215,849  media=-23.21  std=89.55 mm/a
+    Rango IQR [-22.66, 15.08]  Outliers=36,377 (16.9%)
+    Filtrado: N=179,472  media=-2.832  std=6.264 mm/a
+    Raster: C:\Users\Esteban Pinto\Desktop\Tesis\07_Entregable_Universidad\Datos_Profesor\Productos\vertical_cerro.tif
+
+  Escenario: PAPER
+    Bruto   : N=215,844  media=-23.60  std=89.55 mm/a
+    Rango IQR [-23.06, 14.69]  Outliers=36,367 (16.8%)
+    Filtrado: N=179,477  media=-3.225  std=6.266 mm/a
+    Raster: C:\Users\Esteban Pinto\Desktop\Tesis\07_Entregable_Universidad\Datos_Profesor\Productos\vertical_paper.tif
+
+CSV: C:\Users\Esteban Pinto\Desktop\Tesis\07_Entregable_Universidad\Datos_Profesor\Productos\estadisticas_conversion.csv
+=================================================================
+  SCRIPT 01 COMPLETADO
+=================================================================

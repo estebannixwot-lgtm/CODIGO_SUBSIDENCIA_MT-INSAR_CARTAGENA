@@ -1,0 +1,127 @@
+========================================================================
+     MANUAL TECNICO: ORQUESTADOR AUTOMATIZADO SNAP -> MINTPY
+     (10_pipeline_snap_mintpy.py)
+========================================================================
+
+Este documento detalla los requerimientos y el funcionamiento interno del
+script maestro '10_pipeline_snap_mintpy.py'.
+
+MODOS DE EJECUCION:
+1. MODO GUI (Recomendado): Haciendo doble clic en `INICIAR_APLICACION.py`
+2. MODO CONSOLA: Ejecutando `python Scripts/10_pipeline_snap_mintpy.py`
+
+Ambos modos ejecutan exactamente los mismos comandos de fondo y estan
+completamente sincronizados con la lectura de las variables y coordenadas.
+
+========================================================================
+1. CONDICIONES PREVIAS (REQUISITOS DEL SISTEMA)
+========================================================================
+Para que el script funcione correctamente en cualquier computador,
+se deben cumplir las siguientes condiciones:
+
+A. Software Necesario:
+   - Python 3.x con librerias nativas (os, sys, subprocess, xml, re,
+     datetime). No requiere librerias externas para los pasos 1-9.
+   - SNAP 10.0+ instalado. El script buscara 'gpt.exe' automaticamente.
+   - SNAPHU descargado (solo obligatorio para el Paso 6 de Unwrapping).
+
+B. Estructura de Directorios:
+   El script crea su propio entorno de carpetas automaticamente.
+   Solo necesita dos insumos para arrancar:
+   1. Los archivos .zip originales de Sentinel-1 en:
+      Datos_Profesor\00_RAW_ZIP\
+   2. La carpeta 'SNAP_Graphs' con los grafos XML debe estar
+      junto al script de Python (dentro de Scripts\).
+
+C. Archivo de Pares (Paso 3):
+   - Si NO existe 'pares_sbas.txt' en Datos_Profesor\, el script
+     lo GENERA AUTOMATICAMENTE a partir de las imagenes disponibles.
+   - Le preguntara la separacion temporal maxima (default: 90 dias)
+     y el maximo de pares por imagen (default: 4).
+   - Si YA existe, lo usa directamente.
+
+D. Coordenadas del Area de Estudio (Pasos 8 y 9):
+   - El script le pedira las coordenadas (lon/lat) UNA SOLA VEZ.
+   - Estas se inyectan a los grafos XML como parametro ${geoRegion}.
+   - Esto permite usar el pipeline en CUALQUIER zona de Colombia
+     (Cartagena, Bogota, Barranquilla, etc.) sin editar los XML.
+
+
+========================================================================
+2. COMO FUNCIONA EL ALGORITMO INTERNAMENTE
+========================================================================
+El script actua como un "Orquestador Maestro" (Pipeline) que reemplaza
+la necesidad de usar la interfaz grafica (GUI) de SNAP. Su funcionamiento:
+
+- AUTO-DESCUBRIMIENTO:
+  Al arrancar, escanea el sistema buscando 'gpt.exe' en rutas comunes
+  (ej. C:\Program Files\snap\bin\gpt.exe). Si no lo halla, solicita
+  al usuario la ruta, volviendolo 100% portable.
+
+- EXTRACCION AUTOMATICA DE FECHAS:
+  Usa expresiones regulares (regex) para extraer la fecha YYYYMMDD
+  del nombre de cada imagen Sentinel-1 automaticamente, soportando
+  multiples formatos de nomenclatura. Solo pide entrada manual si
+  no logra identificar el patron.
+
+- GENERACION AUTOMATICA DE PARES SBAS:
+  Calcula combinaciones de pares master-slave basandose en las fechas
+  disponibles, respetando la separacion temporal y el numero maximo
+  de conexiones por imagen.
+
+- INYECCION DINAMICA DE PARAMETROS:
+  En el Paso 1 (TOPSAR-Split), pregunta subswath y bursts. Python
+  construye un XML temporal con estos valores e inyecta como
+  instrucciones al 'gpt.exe'.
+
+- COORDENADAS PARAMETRIZADAS:
+  Los grafos XML (subset_grapho.xml, subset_Pha_Coh.xml, subset_unw.xml) usan la
+  variable ${geoRegion} en lugar de coordenadas fijas. El script
+  solicita las coordenadas al usuario y las pasa como parametro -P.
+
+- LECTURA METADATA XML "AL VUELO":
+  Lee archivos .dim con xml.etree para extraer nombres exactos de
+  bandas (Phase_ifg_*, coh_*), evitando errores "Band not found".
+
+- MANEJO DE ESTADOS Y PAUSAS:
+  Al finalizar cada paso, pregunta si desea continuar (S/N) para
+  que el usuario pueda verificar los productos en la GUI de SNAP.
+
+- RECUPERACION DE SNAPHU EXPORT:
+  Corrige automaticamente el problema de la "doble carpeta" donde
+  SNAP crea la salida fuera del directorio esperado, detectando y
+  moviendo las carpetas perdidas a su ubicacion correcta.
+
+- DEGRADACION ELEGANTE (SNAPHU RESUME):
+  En el Paso 6, permite ingresar un par especifico para retomar el
+  desenvolvimiento exactamente donde se quedo.
+
+
+========================================================================
+3. FLUJO DE CARPETAS (OUTPUTS)
+========================================================================
+A medida que el script avanza, transforma los datos saltando de carpeta
+en carpeta dentro de 'Datos_Profesor':
+
+[00_RAW_ZIP] -> [01_DATOS_SLC] -> [02_INTERFEROGRAMAS] ->
+[03_SUBSETS] -> [04_SNAPHU_EXPORT] -> [05_SNAPHU_IMPORT] ->
+[06_MINTPY_INPUTS] -> [07_MINTPY_RESULTS] -> Productos (Paso 11)
+
+
+========================================================================
+4. TABLA DE PASOS DEL MENU
+========================================================================
+Paso  Nombre                                    Requisito
+----  ----------------------------------------  -------------------------
+ 1    TOPSAR-Split + Apply-Orbit + Rename       Archivos .zip en 00_RAW
+ 2    (incluido en paso 1)                      -
+ 3    Generacion SBAS (Interferogramas)          Archivos .dim en 01_DATOS
+ 4    Subset Espacial                           Interferogramas en 02_IFG
+ 5    Exportacion a SNAPHU                      Subsets en 03_SUBSETS
+ 6    SNAPHU Unwrapping                         Exports en 04_SNAPHU
+ 7    Importacion desde SNAPHU                  Imports en 05_SNAPHU
+ 8    Terrain Correction (Pha/Coh)              Subsets + geoRegion
+ 9    Terrain Correction (UNW)                  Imports + geoRegion
+10    Configurar MintPy (ref. point + cfg)     Datos en 06_MINTPY
+11    Cartografia Automatica (Post-Proc.)       Resultados de MintPy
+========================================================================

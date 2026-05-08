@@ -1,0 +1,235 @@
+========================================================================
+     GUIA COMPLETA: INSTALACION DE WSL + MINTPY EN WINDOWS
+     Perez Munoz & Pinto Casique - Tesis ICG - UDFJC 2026
+========================================================================
+
+Esta guia detalla como instalar el entorno Linux en Windows y
+preparar MintPy para la inversion de series temporales InSAR.
+Aplica para cualquier ciudad de Colombia o del mundo.
+
+
+========================================================================
+1. INSTALACION DE WSL (UBUNTU) DESDE CERO EN WINDOWS
+========================================================================
+Requisitos: Windows 10 (build 19041+) o Windows 11.
+
+PASO A PASO:
+1. Abra el menu de Windows, busque "PowerShell".
+2. Clic derecho -> "Ejecutar como administrador".
+3. Escriba exactamente:
+
+   wsl --install
+
+4. Windows descargara e instalara Ubuntu automaticamente.
+   Puede pedir reiniciar el computador al finalizar.
+
+5. Tras reiniciar, busque "Ubuntu" en el menu de inicio y abralo.
+   Le pedira crear un usuario y contrasena.
+   NOTA: Al escribir la contrasena NO se veran los caracteres.
+   Esto es normal en Linux. Escribala y presione Enter.
+
+Si el comando wsl --install da error, ejecute primero:
+   dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+   dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+Reinicie y vuelva a intentar wsl --install.
+
+
+========================================================================
+2. INSTALACION DE MINIFORGE (GESTOR DE PAQUETES CONDA/MAMBA)
+========================================================================
+Dentro de la terminal de Ubuntu, ejecute los siguientes comandos
+uno por uno:
+
+# 2.1 Descargar Miniforge
+wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh
+
+# 2.2 Ejecutar el instalador (escriba 'yes' cuando pregunte)
+bash Miniforge3-Linux-x86_64.sh
+
+# 2.3 Cerrar y reabrir Ubuntu para que surta efecto
+# (Cierre la ventana y vuelvala a abrir desde el menu de Windows)
+
+# 2.4 Verificar que mamba funciona
+mamba --version
+# Deberia mostrar algo como: mamba 1.x.x / conda 24.x.x
+
+
+========================================================================
+3. INSTALACION DE MINTPY
+========================================================================
+Ahora instale MintPy en un entorno aislado:
+
+# 3.1 Crear entorno con MintPy y todas sus dependencias
+mamba create -n mintpy -c conda-forge mintpy -y
+
+# 3.2 Activar el entorno
+mamba activate mintpy
+
+# 3.3 Verificar la instalacion
+smallbaselineApp.py --version
+# Deberia mostrar: MintPy version 1.x.x
+
+# 3.4 (Opcional) Instalar herramientas adicionales utiles
+mamba install -n mintpy -c conda-forge jupyterlab gdal -y
+
+NOTA: La instalacion completa ocupa aproximadamente 3 GB de disco.
+      El proceso puede tardar entre 5 y 15 minutos dependiendo
+      de su conexion a internet.
+
+
+========================================================================
+4. COMO ACCEDER A LOS ARCHIVOS DE WINDOWS DESDE LINUX
+========================================================================
+Sus datos estan en el disco C: de Windows. Desde Ubuntu se accede
+a traves del directorio /mnt/c/:
+
+Ejemplo (ajuste la ruta a donde descomprimio el entregable):
+   cd /mnt/c/Tesis_InSAR/Entregable_Universidad/Datos_Profesor/07_MINTPY_RESULTS
+
+IMPORTANTE: Si la ruta tiene espacios, use comillas:
+   cd "/mnt/c/Users/Mi Usuario/Desktop/Tesis/Entregable_Universidad/Datos_Profesor/07_MINTPY_RESULTS"
+
+
+========================================================================
+5. COMO EJECUTAR MINTPY (PASO A PASO)
+========================================================================
+
+# 5.1 Activar el entorno (SIEMPRE hacer esto al abrir Ubuntu)
+mamba activate mintpy
+
+# 5.2 Navegar a la carpeta de resultados
+cd /mnt/c/RUTA.../Datos_Profesor/07_MINTPY_RESULTS
+
+# 5.3 El archivo smallbaselineApp.cfg YA ESTA INCLUIDO en la carpeta
+# 07_MINTPY_RESULTS. Solo debe ajustar las rutas si descomprimio
+# el entregable en una ubicacion diferente. Para editarlo:
+nano smallbaselineApp.cfg
+
+# Los parametros principales ya estan configurados:
+# - mintpy.load.processor = snap
+# - mintpy.load.unwFile / corFile apuntando a 06_MINTPY_INPUTS
+# - mintpy.network.minCoherence = 0.6 (mascara de coherencia)
+# - mintpy.velocity.maskFile = avgSpatialCoh.h5
+# Solo ajuste mintpy.reference.lalo a su punto de referencia.
+# Guarde con Ctrl+O, Enter, y cierre con Ctrl+X.
+
+# 5.4 Ejecutar la inversion completa
+smallbaselineApp.py smallbaselineApp.cfg
+
+# Esto tardara varias horas dependiendo del numero de interferogramas.
+# Al finalizar, MintPy habra generado:
+#   velocity.h5        -> Mapa de velocidades
+#   timeseries.h5      -> Series temporales
+#   temporalCoherence.h5 -> Coherencia temporal
+#   inputs/geometryRadar.h5 -> Geometria (angulos de incidencia)
+
+
+========================================================================
+6. EXPORTAR RESULTADOS A GEOTIFF (PARA EL PASO 11)
+========================================================================
+Una vez MintPy termine, exporte los resultados a formato GeoTIFF
+para que el orquestador Python pueda usarlos:
+
+# 6.1 Exportar velocidad
+save_gdal.py velocity.h5 -o velocity.tif
+
+# 6.2 Exportar angulo de incidencia
+save_gdal.py inputs/geometryRadar.h5 incidenceAngle -o incidenceAngle.tif
+
+# 6.3 Exportar series temporales de puntos especificos
+# (Opcional, si quiere graficas de series de tiempo)
+save_gdal.py timeseries.h5 -o timeseries.tif
+
+# 6.4 Copie los .tif exportados a las carpetas del Paso 5 del
+#     instructivo principal (INSTRUCCIONES_EJECUCION_ANACONDA.txt):
+#
+#   velocity.tif       -> Datos_Profesor\RASTERS VELOCIDAD\
+#   incidenceAngle.tif -> Datos_Profesor\RASTER INCIDENCIA\
+
+
+========================================================================
+7. VERIFICACION RAPIDA
+========================================================================
+Para verificar que todo funciona antes de la ejecucion real,
+puede correr un test rapido:
+
+mamba activate mintpy
+smallbaselineApp.py --help
+
+Si ve el menu de ayuda de MintPy con todas las opciones,
+la instalacion fue exitosa.
+
+
+========================================================================
+8. MASCARA DE COHERENCIA ESPACIAL (avgSpatialCoh)
+========================================================================
+MintPy calcula automaticamente el archivo avgSpatialCoh.h5, que contiene
+el PROMEDIO de coherencia de todos los interferogramas para cada pixel.
+Este archivo se usa como MASCARA para filtrar pixeles ruidosos (agua,
+vegetacion, zonas sin retrodispersion estable).
+
+COMO FUNCIONA INTERNAMENTE:
+  1. MintPy lee todos los archivos de coherencia (*_coh_tc.dim)
+  2. Calcula el promedio espacial por pixel -> avgSpatialCoh.h5
+  3. Genera una mascara binaria:
+       maskTempCoh.h5 = 1 donde avgSpatialCoh >= umbral
+       maskTempCoh.h5 = 0 donde avgSpatialCoh <  umbral
+  4. Aplica esa mascara a velocity.h5 y timeseries.h5
+  5. Los pixeles enmascarados aparecen como NaN (transparentes)
+
+PARAMETROS EN smallbaselineApp.cfg:
+  # Activar filtrado basado en coherencia
+  mintpy.network.coherenceBased  = yes
+
+  # Umbral minimo (pixeles con coherencia < 0.6 se descartan)
+  mintpy.network.minCoherence    = 0.6
+
+  # Usar avgSpatialCoh como mascara del mapa de velocidades
+  mintpy.velocity.maskFile       = avgSpatialCoh.h5
+  mintpy.velocity.maskDataset    = avgSpatialCoh
+  mintpy.velocity.maskThreshold  = 0.6
+
+GUIA DE UMBRALES:
+  0.5 -> Mas pixeles, mas ruido (zonas vegetadas entran)
+  0.6 -> Equilibrio optimo (usado en esta tesis)
+  0.7 -> Menos pixeles, mas limpio (puede perder edificaciones)
+  0.8 -> Muy restrictivo (solo estructuras muy estables)
+
+VERIFICACION DESPUES DE CORRER MINTPY:
+  # Ver la mascara de coherencia generada
+  view.py avgSpatialCoh.h5
+
+  # Ver la velocidad con la mascara aplicada
+  view.py velocity.h5 --mask avgSpatialCoh.h5 --mask-vmin 0.6
+
+  # Exportar velocidad enmascarada a GeoTIFF
+  save_gdal.py velocity.h5 --mask avgSpatialCoh.h5 --mask-vmin 0.6 -o velocity_masked.tif
+
+
+========================================================================
+9. SOLUCION DE PROBLEMAS COMUNES
+========================================================================
+
+PROBLEMA: "mamba: command not found"
+SOLUCION: Cierre y reabra Ubuntu. Si persiste, ejecute:
+   source ~/miniforge3/etc/profile.d/conda.sh
+   source ~/miniforge3/etc/profile.d/mamba.sh
+
+PROBLEMA: "smallbaselineApp.py: command not found"
+SOLUCION: Asegurese de activar el entorno primero:
+   mamba activate mintpy
+
+PROBLEMA: "No module named mintpy"
+SOLUCION: Reinstale MintPy:
+   mamba remove -n mintpy --all -y
+   mamba create -n mintpy -c conda-forge mintpy -y
+
+PROBLEMA: "Permission denied" al acceder a archivos
+SOLUCION: Ejecute Ubuntu como administrador, o copie los datos
+   a una carpeta sin restricciones de permisos.
+
+PROBLEMA: Proceso muy lento (>24 horas)
+SOLUCION: Reduzca el numero de interferogramas o aumente el umbral
+   de coherencia en el template (mintpy.network.minCoherence = 0.7).
+
+========================================================================

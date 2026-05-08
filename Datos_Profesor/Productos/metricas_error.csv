@@ -1,0 +1,4 @@
+Escenario,InSAR_pixel_mm_a,InSAR_media_filtrada_mm_a,GNSS_media_mm_a,ME_mm_a,MAE_mm_a,RMSE_mm_a,Sigma_mm_a
+castillo,-21.728,-3.225,-1.904,-19.8246,19.8246,19.8287,0.4039
+cerro,-21.334,-2.832,-1.904,-19.4307,19.4307,19.4349,0.4039
+paper,-21.728,-3.225,-1.904,-19.8246,19.8246,19.8287,0.4039

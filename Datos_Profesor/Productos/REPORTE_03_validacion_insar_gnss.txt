@@ -1,0 +1,29 @@
+
+======================================================
+ EFEMÉRIDES DE EJECUCIÓN - 2026-05-08 11:42:33
+======================================================
+=================================================================
+  SCRIPT 03 – VALIDACION InSAR vs GNSS (filtrado IQR)
+=================================================================
+
+-- Velocidades GNSS validas (6 soluciones) --
+   Media  : -1.904 mm/a
+   Mediana: -1.839 mm/a
+   Std    : 0.442 mm/a
+   Rango  : -2.486 a -1.235 mm/a
+
+-- Extrayendo InSAR en pixel [(1021, 923)] (26m de Lat=10.3915, Lon=-75.5339) --
+   CASTILLO  : -21.728 mm/a
+   CERRO     : -21.334 mm/a
+   PAPER     : -21.728 mm/a
+
+-- Metricas de error (InSAR pixel vs GNSS soluciones) --
+   CASTILLO  : ME=-19.825  MAE=19.825  RMSE=19.829  s=0.404 mm/a
+   CERRO     : ME=-19.431  MAE=19.431  RMSE=19.435  s=0.404 mm/a
+   PAPER     : ME=-19.825  MAE=19.825  RMSE=19.829  s=0.404 mm/a
+
+   MEJOR ESCENARIO (menor RMSE): CERRO
+
+=================================================================
+  SCRIPT 03 COMPLETADO
+=================================================================

@@ -1,0 +1,146 @@
+========================================================================
+     INSTRUCCIONES DE EJECUCION - PIPELINE InSAR AUTOMATIZADO
+     Perez Munoz & Pinto Casique - Tesis ICG - UDFJC 2026
+========================================================================
+
+Este archivo detalla el paso a paso exacto para replicar la tesis
+desde cero, conectando el procesamiento de imagenes radar crudas (SNAP)
+hasta la generacion cartografica automatizada (Python).
+
+========================================================================
+PASO 0: DESCOMPRESION DEL ENTREGABLE
+========================================================================
+1. Descomprima este archivo ZIP en cualquier ubicacion de su PC.
+   Ejemplo: C:\Tesis_InSAR\
+2. La estructura interna es:
+   Entregable_Universidad\
+     Scripts\               <- Pipeline + grafos XML
+     Datos_Profesor\        <- Carpetas de trabajo (se crean solas)
+     EXPLICACION\           <- Manuales tecnicos y guias
+
+
+========================================================================
+PASO 1: INSTALACION DEL ENTORNO PYTHON (UNA SOLA VEZ)
+========================================================================
+1. Abra "Anaconda Prompt" desde el Menu Inicio de Windows.
+2. Navegue a la carpeta del entregable descomprimido:
+
+   cd "RUTA_DONDE_DESCOMPRIMIO\Entregable_Universidad"
+
+3. Cree un entorno aislado de Python:
+
+   conda create -n insar_tesis python=3.13 -y
+
+4. Active el entorno e instale las librerias necesarias:
+
+   conda activate insar_tesis
+   conda install -c conda-forge geopandas rasterio rioxarray matplotlib contextily scipy pandas lxml -y
+
+NOTA: Si NO tiene Anaconda, puede usar pip directamente:
+   pip install geopandas rasterio rioxarray matplotlib contextily scipy pandas lxml
+
+
+========================================================================
+PASO 2: PREPARAR LOS DATOS DE ENTRADA
+========================================================================
+1. Descargue las imagenes Sentinel-1 (formato .zip, SIN descomprimir)
+   desde Copernicus Open Access Hub o ASF.
+2. Peguelas en la carpeta: Datos_Profesor\00_RAW_ZIP\
+
+SOFTWARE REQUERIDO (debe estar instalado antes de continuar):
+- SNAP 10.0+ (https://step.esa.int/main/download/snap-download/)
+- SNAPHU (solo para el paso de Unwrapping)
+
+
+========================================================================
+PASO 3: FASE 1 - PRE-PROCESAMIENTO (ORQUESTADOR SNAP)
+========================================================================
+1. Puede ejecutar la nueva INTERFAZ GRAFICA WEB haciendo doble clic en:
+   
+   INICIAR_APLICACION.py
+
+   (O desde su consola ejecute: python INICIAR_APLICACION.py)
+   Se abrira una ventana en su navegador web con todo el panel de control.
+
+   Alternativamente, si prefiere la version de texto clasica, ejecute:
+   
+   python Scripts\10_pipeline_snap_mintpy.py
+
+2. Aparecera un menu interactivo del 1 al 11. Escriba '1' y Enter.
+3. El programa le pedira:
+   - Subswath deseado (ej. IW1, IW2, IW3)
+   - Indices de Bursts (ej. primer burst: 7, ultimo burst: 8)
+   - Las COORDENADAS de su area de estudio (longitudes y latitudes)
+     Estas se usaran en todos los recortes y correcciones geometricas.
+     Ejemplo Cartagena: lonMin=-75.65, lonMax=-75.40, latMin=10.30, latMax=10.52
+
+4. EXTRACCION DE FECHAS: El script extrae automaticamente la fecha de
+   cada imagen Sentinel-1 usando expresiones regulares. No necesita
+   escribirlas manualmente.
+
+5. GENERACION DE PARES SBAS: Si no existe el archivo pares_sbas.txt,
+   el script lo genera automaticamente. Le preguntara:
+   - Separacion temporal maxima en dias (default: 90)
+   - Maximo de pares por imagen (default: 4)
+
+6. Siga las instrucciones en pantalla hasta completar el Paso 9.
+   Entre cada paso, el script le preguntara si desea continuar (S/N)
+   para que pueda verificar los productos en la GUI de SNAP.
+
+
+========================================================================
+PASO 4: FASE 2 - INVERSION MULTITEMPORAL (MINTPY en WSL)
+========================================================================
+1. Los datos procesados quedaran en: Datos_Profesor\06_MINTPY_INPUTS\
+2. MintPy se debe CORRER desde: Datos_Profesor\07_MINTPY_RESULTS\
+   (esta carpeta ya existe, fue creada automaticamente)
+3. Abra su terminal de Linux (WSL / Ubuntu).
+   Si no tiene WSL, consulte: EXPLICACION\INSTRUCCIONES_INSTALACION_WSL_MINTPY.txt
+4. Navegue a la carpeta de resultados:
+
+   cd /mnt/c/RUTA.../Entregable_Universidad/Datos_Profesor/07_MINTPY_RESULTS
+
+5. Cree/edite su smallbaselineApp.cfg (YA esta incluido en la carpeta):
+
+   mintpy.load.processor  = snap
+   mintpy.load.unwFile    = ../06_MINTPY_INPUTS/*/*_unw_tc.dim
+   mintpy.load.corFile    = ../06_MINTPY_INPUTS/*/*_coh_tc.dim
+
+6. Ejecute:
+
+   smallbaselineApp.py smallbaselineApp.cfg
+
+7. Al terminar, exporte los resultados:
+
+   save_gdal.py velocity.h5 -o velocity.tif
+   save_gdal.py inputs/geometryRadar.h5 incidenceAngle -o incidenceAngle.tif
+
+
+========================================================================
+PASO 5: FASE 3 - POST-PROCESAMIENTO Y CARTOGRAFIA AUTOMATICA
+========================================================================
+1. Exporte los resultados de MintPy y ubiquelos en:
+   - Datos_Profesor\RASTERS VELOCIDAD\     -> (Los .tif de velocidad LOS)
+   - Datos_Profesor\RASTER INCIDENCIA\     -> (El .tif de angulo de incidencia)
+   - Datos_Profesor\GNSS\                  -> (Los .neu de SONEL)
+   - Datos_Profesor\SHAPE AREA DE ESTUDIO\ -> (El poligono .shp de su zona)
+   - Datos_Profesor\desplazamiento_<zona>\ -> (Los .txt de serie temporal)
+
+2. Vuelva a su consola de Anaconda Prompt.
+3. Ejecute de nuevo el orquestador maestro:
+
+   python Scripts\10_pipeline_snap_mintpy.py
+
+4. Elija el PASO 11. El script ejecutara automaticamente toda la
+   bateria de scripts cartograficos (01 al 09):
+   - Convertira el LOS a vertical
+   - Filtrara el ruido estadistico con IQR
+   - Calibrara las antenas GNSS
+   - Generara los 21 mapas hibridos de alta resolucion
+
+========================================================================
+FLUJO DE CARPETAS COMPLETO:
+  00_RAW_ZIP -> 01_DATOS_SLC -> 02_INTERFEROGRAMAS -> 03_SUBSETS
+  -> 04_SNAPHU_EXPORT -> 05_SNAPHU_IMPORT -> 06_MINTPY_INPUTS
+  -> 07_MINTPY_RESULTS -> RASTERS VELOCIDAD -> Productos (Paso 11)
+========================================================================

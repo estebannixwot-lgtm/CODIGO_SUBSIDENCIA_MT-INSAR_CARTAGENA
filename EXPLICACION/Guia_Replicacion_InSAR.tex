@@ -1,0 +1,110 @@
+﻿\documentclass[11pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{enumitem}
+
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+\definecolor{keywordcolor}{rgb}{0.13,0.29,0.53}
+\definecolor{stringcolor}{rgb}{0.31,0.60,0.02}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{codegray},   
+    commentstyle=\color{gray},
+    keywordstyle=\color{keywordcolor}\bfseries,
+    numberstyle=\tiny\color{gray},
+    stringstyle=\color{stringcolor},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\title{\textbf{Gu\'ia T\'ecnica de Replicaci\'on: Software Algor\'itmico para Procesamiento InSAR}}
+\author{Ingenier\'ia Catastral y Geodesia \\ Universidad Distrital Francisco Jos\'e de Caldas}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducci\'on}
+El presente documento constituye la gu\'ia oficial para la ejecuci\'on del software anal\'itico desarrollado en la tesis \textbf{"An\'alisis de la din\'amica de subsidencia en Cartagena de Indias mediante interferometr\'ia SAR multitemporal"}. Los scripts entregados han sido programados con una arquitectura \textbf{100\% din\'amica y agn\'ostica}, lo que significa que el evaluador puede introducir nuevos datos (de cualquier zona o escenario) y el c\'odigo procesar\'a autom\'aticamente la filtraci\'on de errores, la calibraci\'on GNSS y la cartograf\'ia sin requerir ajustes manuales.
+
+\section{PASO 1: Requisitos y Configuraci\'on del Entorno}
+
+\subsection{1.1. Creaci\'on del Entorno Virtual de Python}
+El software requiere Python 3.10 a 3.13. Abra su consola (Anaconda Prompt) y ejecute los comandos:
+
+\begin{lstlisting}[language=bash]
+# Creacion y activacion del entorno
+conda create -n insar_tesis python=3.13 -y
+conda activate insar_tesis
+
+# Instalacion de librerias espaciales
+conda install -c conda-forge geopandas rasterio rioxarray matplotlib contextily scipy pandas -y
+\end{lstlisting}
+
+\begin{tcolorbox}[colback=yellow!10!white,colframe=red!75!black,title=Soluci\'on a PROJ\_LIB]
+Si el equipo posee PostGIS o QGIS, el entorno puede presentar conflictos de proyecci\'on. Todos los scripts incluyen parches que corrigen autom\'aticamente la variable \texttt{PROJ\_LIB} en tiempo de ejecuci\'on.
+\end{tcolorbox}
+
+\section{PASO 2: Disposici\'on de Datos Crudos (Input)}
+Dentro de la carpeta \texttt{Entregable\_Universidad/Datos\_Profesor/}, hemos creado una estructura de subcarpetas que el usuario debe nutrir con los archivos crudos (MintPy/SONEL) antes de correr el c\'odigo:
+
+\begin{itemize}
+    \item \textbf{Carpeta \texttt{RASTERS VELOCIDAD/}:} Deposite aqu\'i todos los archivos \texttt{.tif} de velocidad LOS exportados de MintPy (puede poner m\'ultiples escenarios).
+    \item \textbf{Carpeta \texttt{RASTER INCIDENCIA/}:} Deposite aqu\'i el \'angulo de incidencia (\texttt{local\_incidente\_angle.tif}).
+    \item \textbf{Carpeta \texttt{GNSS/}:} Deposite los archivos \texttt{.neu} o \texttt{.pos} de las series de tiempo GNSS (formato SONEL/NGL).
+    \item \textbf{Carpeta \texttt{SHAPE AREA DE ESTUDIO/}:} Deposite el l\'imite en formato \texttt{.shp}.
+\end{itemize}
+
+\textit{Nota Avanzada (Plug-and-play):} Si desea generar mapas h\'ibridos que incluyan series de tiempo en la parte inferior, cree una carpeta llamada \texttt{desplazamiento\_<escenario>} y ponga adentro los archivos \texttt{.txt} exportados de MintPy. Si no lo hace, el software omitir\'a inteligentemente la gr\'afica y generar\'a solo los mapas de deformaci\'on sin fallar.
+
+\section{PASO 3: Ejecuci\'on Secuencial}
+En su consola, active el entorno y ejecute los m\'odulos en el siguiente orden desde la ra\'iz \texttt{Entregable\_Universidad/}:
+
+\subsection{M\'odulo 1: Conversi\'on Geom\'etrica y Filtro IQR Autom\'atico}
+\begin{lstlisting}[language=bash]
+python Scripts/01_conversion_los_vertical.py
+\end{lstlisting}
+\textbf{Funcionalidad:} Lee din\'amicamente todos los rasters ingresados, proyecta la deformaci\'on a vertical y aplica autom\'aticamente un filtro estad\'istico Intercuart\'ilico (IQR) adaptativo. Esto elimina píxeles ruidosos (con alta desviaci\'on est\'andar) procedentes de agua o vegetaci\'on.
+
+\subsection{M\'odulo 2: Calibraci\'on Geod\'esica}
+\begin{lstlisting}[language=bash]
+python Scripts/02_analisis_gnss.py
+python Scripts/03_validacion_insar_gnss.py
+\end{lstlisting}
+\textbf{Funcionalidad:} Eval\'ua las soluciones GNSS ingresadas, descarta autom\'aticamente las series temporales an\'omalas (carentes de correlaci\'on matem\'atica, como GT2) y calcula el sesgo absoluto.
+
+\subsection{M\'odulo 3: M\'ascara de Patrimonio}
+\begin{lstlisting}[language=bash]
+python Scripts/05_recorte_localidad_historica.py
+\end{lstlisting}
+\textbf{Funcionalidad:} Corta todos los escenarios procesados al pol\'igono de estudio ingresado y exporta estad\'isticas.
+
+\subsection{M\'odulo 4: Cartograf\'ia Automatizada}
+\begin{lstlisting}[language=bash]
+python Scripts/09_layouts_tesis_oficial.py
+\end{lstlisting}
+\textbf{Funcionalidad:} Motor gr\'afico universal. Lee WMS (ortofotos), superpone los puntos estables y genera \textit{Layouts} PDF/PNG completamente an\'onimos. Si el usuario ingres\'o series de tiempo, grafica la fatiga estructural y calcula el RMSE; de lo contrario, exporta el mapa general. Todo se guardar\'a en \texttt{Datos\_Profesor/Productos/}.
+
+
+\section{PASO 4: Trazabilidad y Reportes Autom'aticos}
+Cada vez que se ejecutan los scripts, el software cuenta con un Logger interno que guarda un historial tipo "efem'erides". Esto significa que todos los c'alculos matem'aticos, p'ixeles procesados, porcentajes de ruido excluido y velocidades GNSS se guardan autom'aticamente en archivos de texto (Ej. \texttt{REPORTE\_01\_conversion...txt}) dentro de la carpeta \texttt{Productos/}.
+
+Adicionalmente, en la ra'iz del entregable se adjunta el documento \textbf{\texttt{EXPLICACION\_MATEMATICA\_ALGORITMOS.txt}}, el cual detalla la formulaci'on anal'itica usada (como el filtro IQR) y c'omo el m'odulo cartogr'afico (M'odulo 4) se conecta a servidores mundiales WMS para descargar autom'aticamente ortofotos satelitales sin importar si el 'area de estudio es Cartagena, Bogot'a o cualquier lugar del mundo.
+
+\end{document}

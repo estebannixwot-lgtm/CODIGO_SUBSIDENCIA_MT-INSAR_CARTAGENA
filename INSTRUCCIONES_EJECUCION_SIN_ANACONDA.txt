@@ -1,0 +1,175 @@
+========================================================================
+  GUIA DE EJECUCION SIN ANACONDA (Solo Python + pip)
+========================================================================
+  Pipeline InSAR - Preprocesamiento SNAP + MintPy
+  Esta guia es para usuarios que tienen Python instalado directamente
+  en Windows (desde python.org) y NO tienen Anaconda/Miniconda.
+========================================================================
+
+
+REQUISITO MINIMO:
+  - Python 3.9 o superior instalado en Windows
+  - Para verificar: abra CMD o PowerShell y ejecute:
+      python --version
+  - Si no tiene Python, descarguelo de: https://www.python.org/downloads/
+    IMPORTANTE: Al instalar, marque la casilla "Add Python to PATH"
+
+
+========================================================================
+PASO 1: CREAR UN ENTORNO VIRTUAL (Recomendado)
+========================================================================
+Abra una terminal (CMD o PowerShell) y navegue a la carpeta del proyecto:
+
+  cd "C:\ruta\a\07_Entregable_Universidad"
+
+Cree un entorno virtual para aislar las dependencias:
+
+  python -m venv entorno_insar
+
+Active el entorno:
+  - En CMD:
+      entorno_insar\Scripts\activate
+  - En PowerShell:
+      entorno_insar\Scripts\Activate.ps1
+
+Si PowerShell le da error de permisos, ejecute primero:
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+Deberia ver (entorno_insar) al inicio de la linea de su terminal.
+
+
+========================================================================
+PASO 2: INSTALAR DEPENDENCIAS
+========================================================================
+Con el entorno activado, instale las librerias necesarias:
+
+  pip install numpy matplotlib rasterio geopandas pandas scipy flask h5py
+
+Si algun paquete falla (especialmente rasterio en Windows), puede
+usar los binarios precompilados de Christoph Gohlke:
+  https://www.lfd.uci.edu/~gohlke/pythonlibs/
+
+O instale rasterio asi:
+  pip install rasterio --no-binary rasterio
+
+Nota: Si tiene problemas con GDAL/rasterio, instale primero:
+  pip install GDAL
+  (Puede requerir descargar el .whl correcto para su version de Python)
+
+
+========================================================================
+PASO 3: VERIFICAR LA INSTALACION
+========================================================================
+Ejecute estos comandos para verificar que todo se instalo bien:
+
+  python -c "import numpy; print('NumPy OK:', numpy.__version__)"
+  python -c "import rasterio; print('Rasterio OK:', rasterio.__version__)"
+  python -c "import matplotlib; print('Matplotlib OK:', matplotlib.__version__)"
+  python -c "import flask; print('Flask OK:', flask.__version__)"
+  python -c "import pandas; print('Pandas OK:', pandas.__version__)"
+  python -c "import scipy; print('SciPy OK:', scipy.__version__)"
+
+Si todos dicen "OK", puede continuar.
+
+
+========================================================================
+PASO 4: EJECUTAR EL PIPELINE
+========================================================================
+
+OPCION A - INTERFAZ GRAFICA WEB:
+  Con el entorno activado, ejecute:
+
+    python INICIAR_APLICACION.py
+
+  Se abrira su navegador en http://localhost:5000 con el panel de control.
+
+
+OPCION B - MODO CONSOLA:
+  Con el entorno activado, ejecute:
+
+    python Scripts\10_pipeline_snap_mintpy.py
+
+  Aparecera el menu interactivo con los 11 pasos.
+
+
+OPCION C - SCRIPTS DE CARTOGRAFIA INDIVIDUALES:
+  Si solo quiere generar los mapas (ya tiene los GeoTIFF procesados):
+
+    python Scripts\01_conversion_los_vertical.py
+    python Scripts\04_cartografia_universal.py
+
+
+========================================================================
+PASO 5: MINTPY (Requiere WSL o Linux)
+========================================================================
+MintPy NO funciona directamente en Windows. Tiene dos opciones:
+
+  OPCION 1 - WSL (Windows Subsystem for Linux):
+    Consulte: EXPLICACION\INSTRUCCIONES_INSTALACION_WSL_MINTPY.txt
+    En WSL, instale MintPy con pip:
+      pip install mintpy pyaps3
+
+  OPCION 2 - Conda/Mamba en WSL:
+    wsl
+    conda create -n mintpy python=3.11
+    conda activate mintpy
+    conda install -c conda-forge mintpy pyaps3
+
+  Ambas opciones son validas. MintPy se ejecuta desde WSL, no desde
+  Windows directamente.
+
+
+========================================================================
+DIFERENCIAS ENTRE ANACONDA Y PIP
+========================================================================
+
+Aspecto              | Anaconda/Conda          | Python + pip
+---------------------|-------------------------|------------------------
+Instalacion          | ~3 GB                   | ~100 MB
+Manejo de paquetes   | conda install           | pip install
+Entornos             | conda create -n nombre  | python -m venv nombre
+Librerias cientificas| Incluidas por defecto   | Instalar una por una
+GDAL/Rasterio        | Facil (conda-forge)     | Puede requerir .whl
+MintPy               | mamba install mintpy    | pip install mintpy
+Velocidad            | Mas lento al instalar   | Mas rapido
+Compatibilidad       | Puede conflictar con pip| Nativo de Python
+
+RECOMENDACION: Para la Fase 1 (SNAP, pasos 1-9) y la cartografia
+(scripts 01-09), pip funciona perfectamente.
+Para la Fase 2 (MintPy en WSL), Conda/Mamba es mas confiable por
+las dependencias complejas de GDAL y HDF5.
+
+
+========================================================================
+RESOLUCION DE PROBLEMAS COMUNES
+========================================================================
+
+ERROR: "python no se reconoce como comando"
+  -> Python no esta en el PATH. Reinstalelo marcando "Add to PATH"
+  -> O use la ruta completa: C:\Users\SuUsuario\AppData\Local\Programs\Python\Python311\python.exe
+
+ERROR: "pip no se reconoce como comando"
+  -> Ejecute: python -m pip install --upgrade pip
+
+ERROR: "No module named rasterio"
+  -> Ejecute: pip install rasterio
+  -> Si falla, descargue el .whl de la pagina de Gohlke
+
+ERROR: "GDAL not found" al instalar rasterio
+  -> Instale GDAL primero:
+     pip install GDAL==$(gdal-config --version 2>/dev/null || echo "3.6.4")
+  -> O use: pip install --only-binary :all: rasterio
+
+ERROR: "flask: address already in use"
+  -> Otro proceso esta usando el puerto 5000
+  -> Cierre esa ventana o cambie el puerto en INICIAR_APLICACION.py
+
+ERROR: PowerShell no permite ejecutar scripts (.ps1)
+  -> Ejecute: Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+  -> O use CMD en vez de PowerShell
+
+
+========================================================================
+  FIN DE LA GUIA
+  Cualquier duda, consulte EXPLICACION\MANUAL_ORQUESTADOR_SNAP.txt
+========================================================================

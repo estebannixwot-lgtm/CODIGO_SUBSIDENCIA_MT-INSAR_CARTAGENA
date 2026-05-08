@@ -1,0 +1,76 @@
+﻿========================================================================
+    EXPLICACIÓN TÉCNICA Y MATEMÁTICA DE LOS ALGORITMOS InSAR
+========================================================================
+
+Este documento tiene como finalidad explicar la arquitectura matemática 
+subyacente de cada uno de los módulos de Python desarrollados, garantizando 
+la reproducibilidad, transparencia y universalidad del software.
+
+------------------------------------------------------------------------
+MÓDULO 01: CONVERSIÓN GEOMÉTRICA (LOS A VERTICAL)
+------------------------------------------------------------------------
+Operación Matemática:
+La velocidad satelital medida por Sentinel-1 se encuentra en la Línea de Vista 
+(Line Of Sight - LOS). Dado que en estudios de subsidencia urbana el principal 
+vector de interés es el asentamiento gravitacional, se proyecta trigonométricamente:
+
+    Velocidad_Vertical = Velocidad_LOS / cos(θ_incidencia)
+
+El script lee el raster de incidencia local (θ), lo convierte de grados a 
+radianes, calcula el coseno de cada píxel y divide la matriz LOS. 
+Píxeles con ángulos rasantes (< 10°) son enmascarados como NoData (NaN) para 
+evitar singularidades asintóticas en el coseno que inflen artificialmente la velocidad.
+
+------------------------------------------------------------------------
+MÓDULO 02 y 03: VALIDACIÓN GEODÉSICA GNSS
+------------------------------------------------------------------------
+Operación Matemática:
+Se ingestan los archivos residuales (.neu) que representan el desplazamiento 
+en milímetros (North, East, Up).
+El algoritmo extrae la componente Up, filtra los datos temporalmente a la 
+ventana de adquisición de Sentinel-1 y calcula la recta de regresión lineal 
+mediante mínimos cuadrados ordinarios:
+
+    y(t) = a*t + b
+
+Donde 'a' es la velocidad absoluta de la antena GNSS. 
+El software luego compara este valor contra la media de los píxeles InSAR que 
+se encuentran en el radio de la antena y calcula el sesgo absoluto (Offset) y 
+la Raíz del Error Cuadrático Medio (RMSE).
+
+------------------------------------------------------------------------
+MÓDULO 05: FILTRO ESTADÍSTICO DE RUIDO (IQR)
+------------------------------------------------------------------------
+Operación Matemática:
+La interferometría es susceptible al ruido de decorrelación (agua, selva, etc).
+El software extrae TODOS los píxeles válidos del raster y calcula sus cuartiles:
+    Q1 = Percentil 25
+    Q3 = Percentil 75
+    IQR = Q3 - Q1
+
+Luego define la "frontera de confianza":
+    Límite Inferior = Q1 - 1.5 * IQR
+    Límite Superior = Q3 + 1.5 * IQR
+
+Todo píxel cuya velocidad caiga por fuera de estos límites es reclasificado 
+como NoData. Esto garantiza que el promedio y la desviación estándar de la zona 
+no estén contaminados por ruido, arrojando una estadística pura de la 
+infraestructura construida.
+
+------------------------------------------------------------------------
+MÓDULO 09: MOTOR DE CARTOGRAFÍA HÍBRIDA UNIVERSAL
+------------------------------------------------------------------------
+Funcionamiento y Escalabilidad Geográfica:
+Este motor no usa imágenes estáticas de fondo, sino que se conecta dinámicamente 
+a los servidores mundiales WMS de Esri (World Imagery) mediante la librería 
+'contextily'. 
+
+¿Funciona para cualquier parte de Colombia o del mundo?
+SÍ. El script extrae el "Bouding Box" (las coordenadas límite) del raster de 
+velocidad ingresado (sin importar si es Cartagena, Bogotá, Amazonas o Japón) 
+y descarga automáticamente los mosaicos satelitales (tiles) exactos de esa 
+coordenada desde la web.
+
+Adicionalmente, si el usuario suministra series de tiempo, calcula 
+dinámicamente la pendiente de fatiga estructural y el RMSE punto a punto, 
+ensamblando un "Layout" PDF/PNG anónimo y profesional.

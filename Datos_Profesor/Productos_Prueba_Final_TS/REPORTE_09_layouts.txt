@@ -1,0 +1,42 @@
+
+======================================================
+ EFEMÉRIDES DE EJECUCIÓN - 2026-04-28 17:03:52
+======================================================
+=================================================================
+  SCRIPT 09 - CARTOGRAFÍA HÍBRIDA UNIVERSAL (WMS + InSAR)
+=================================================================
+  Shapefile cargado exitosamente para superposición.
+
+  Procesando escenario: CASTILLO
+    Generando layouts temporales (7 puntos)...
+    Guardado: LAYOUT_CASTILLO_Max_Subsidencia.png
+    Guardado: LAYOUT_CASTILLO_Max_Elevacion.png
+    Guardado: LAYOUT_CASTILLO_Centro_Historico.png
+    Guardado: LAYOUT_CASTILLO_Barrio_Manga.png
+    Guardado: LAYOUT_CASTILLO_GNSS_CART.png
+    Guardado: LAYOUT_CASTILLO_Bocagrande.png
+    Guardado: LAYOUT_CASTILLO_San_Diego.png
+
+  Procesando escenario: CERRO
+    Generando layouts temporales (7 puntos)...
+    Guardado: LAYOUT_CERRO_Max_Subsidencia.png
+    Guardado: LAYOUT_CERRO_Max_Elevacion.png
+    Guardado: LAYOUT_CERRO_Centro_Historico.png
+    Guardado: LAYOUT_CERRO_Barrio_Manga.png
+    Guardado: LAYOUT_CERRO_GNSS_CART.png
+    Guardado: LAYOUT_CERRO_Bocagrande.png
+    Guardado: LAYOUT_CERRO_San_Diego.png
+
+  Procesando escenario: PAPER
+    Generando layouts temporales (7 puntos)...
+    Guardado: LAYOUT_PAPER_Max_Subsidencia.png
+    Guardado: LAYOUT_PAPER_Max_Elevacion.png
+    Guardado: LAYOUT_PAPER_Centro_Historico.png
+    Guardado: LAYOUT_PAPER_Barrio_Manga.png
+    Guardado: LAYOUT_PAPER_GNSS_CART.png
+    Guardado: LAYOUT_PAPER_Bocagrande.png
+    Guardado: LAYOUT_PAPER_San_Diego.png
+
+=================================================================
+  SCRIPT 09 COMPLETADO
+=================================================================
