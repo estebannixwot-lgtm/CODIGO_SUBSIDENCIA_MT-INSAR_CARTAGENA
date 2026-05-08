@@ -31,5 +31,5 @@ El diseño de este *pipeline* se rige bajo una arquitectura estandarizada. Su l�
 
 ## 📝 Autor y Agradecimientos
 
-- **Esteban Pinto** - Investigador Principal
+- **Esteban Pinto y Johan Smit Perez**
 - Proyecto vinculado al Semillero GEIPER, ICG. Universidad Distrital Francisco José de Caldas.
